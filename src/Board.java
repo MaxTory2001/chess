@@ -330,7 +330,7 @@ public class Board {
 
         updateSeenAndPins();
     }
-
+//comment
     public void draw() {
         int i = 56;
         System.out.println("---------------------------------");
