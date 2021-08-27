@@ -15,18 +15,20 @@ public class Board {
     private boolean[] inCheck = new boolean[2];
     private ArrayList<ArrayList<Integer>> blockCheckSquares = new ArrayList<>();
 
-    private final int[] kingSquares = new int[2];
+    final int[] kingSquares = new int[2];
     private final Move[][] castles = new Move[2][2];
     private boolean[][] canCastle = new boolean[2][2];
+
+    MoveGenerator moveGenerator;
 
     private final ArrayList<Move> completedMoves = new ArrayList<>();
     private int turn;   // stores the character whose turn it is to move
 
     private int move;
-    private int movesSinceCaptureOrPush;
+    private int movesSinceCaptureOrPush; // for 50 move draw rule
 
-    private final ArrayList<Piece>[] pieces = new ArrayList[2];
-    private final King[] kings = new King[2];
+    ArrayList<Piece>[] pieces = new ArrayList[2];
+    King[] kings = new King[2];
 
     // FEN string encoding the initial status of the chess board at the start of a game
     private static final String START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -35,6 +37,8 @@ public class Board {
         makeSquares();
         loadFromFEN(START_FEN);
         createCastlingMoves();
+
+        moveGenerator = new LegalMovesGenerator(this.turn);
     }
 
     public Board(String fen) {
@@ -42,6 +46,8 @@ public class Board {
         this.makeSquares();
         this.loadFromFEN(fen);
         createCastlingMoves();
+
+        moveGenerator = new LegalMovesGenerator(this.turn);
     }
 
     public void addSeen(int square, Colour colour) {
@@ -330,7 +336,7 @@ public class Board {
 
         updateSeenAndPins();
     }
-//comment
+
     public void draw() {
         int i = 56;
         System.out.println("---------------------------------");

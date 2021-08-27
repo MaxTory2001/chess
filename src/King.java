@@ -33,4 +33,19 @@ public class King extends Piece{
 
         return moves;
     }
+
+    @Override
+    public long getSeenSquares(long seenSquaresBitMask) {
+        for (Direction direction : Direction.values()) {
+            if (square.distances.get(direction) == 0) break;
+
+            int start = square.getSquareNum();
+            int end = start + direction.val;
+
+            // add this square to the squares seen
+            seenSquaresBitMask |= (long) 1 << end;
+        }
+
+        return seenSquaresBitMask;
+    }
 }

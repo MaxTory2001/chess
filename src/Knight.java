@@ -36,34 +36,55 @@ public class Knight extends Piece{
 
             // checking that knight can move within boundaries of the board
 
-            if (end >= 0 && end < 64) {
+            if (end < 0 || end >= 64) break;
+            // horizontal and vertical movement of knight should only ever be one or 2 squares
+            if (Math.abs(endx - startx) >= 3 || Math.abs(endy - starty) >= 3) break;
 
-                if (squaresToBlockCheck.size() == 0 || (squaresToBlockCheck.get(0).contains(end))) {
+            if (squaresToBlockCheck.size() == 0 || (squaresToBlockCheck.get(0).contains(end))) {
+                int endSquarePiece = board.at(end);
 
-                    // horizontal and vertical movement of knight should only ever be one or 2 squares
-                    if (Math.abs(endx - startx) < 3 && Math.abs(endy - starty) < 3) {
-                        int endSquarePiece = board.at(end);
+                if (Piece.colourOf(endSquarePiece) != colour) {
+                    if (movesOrCheckSeen) {
+                        moves.add(new Move(start, end, this));
+                    } else {
+                        board.addSeen(end, colour);
 
-                        if (Piece.colourOf(endSquarePiece) != colour) {
-                            if (movesOrCheckSeen) {
-                                moves.add(new Move(start, end, this));
-                            } else {
-                                board.addSeen(end, colour);
-
-                                if (board.pieceAt(end) instanceof King) {
-                                    ArrayList<Integer> thisSquareAndCheckSquare = new ArrayList<>(2);
-                                    thisSquareAndCheckSquare.add(start);
-                                    thisSquareAndCheckSquare.add(end);
-                                    board.addCheckSquares(thisSquareAndCheckSquare);
-                                }
-                            }
-
+                        if (board.pieceAt(end) instanceof King) {
+                            ArrayList<Integer> thisSquareAndCheckSquare = new ArrayList<>(2);
+                            thisSquareAndCheckSquare.add(start);
+                            thisSquareAndCheckSquare.add(end);
+                            board.addCheckSquares(thisSquareAndCheckSquare);
                         }
                     }
+
                 }
             }
         }
 
         return moves;
+    }
+
+    @Override
+    public long getSeenSquares(long seenSquaresBitMask) {
+        for (int possibleMove : possibleMoves) {
+            int start = square.getSquareNum();
+            int end = start + possibleMove;
+
+            if (end < 0 || end > 63) break; // can only move within board
+
+            int startx = start % 8;
+            int starty = start / 8;
+
+            int endx = end % 8;
+            int endy = end / 8;
+
+            // move takes the knight from one side of the board to the other. Not allowed!
+            if (Math.abs(endx - startx) >= 3 || Math.abs(endy - starty) >= 3) break;
+
+            // add this square to the squares seen
+            seenSquaresBitMask |= (long) 1 << end;
+        }
+
+        return seenSquaresBitMask;
     }
 }

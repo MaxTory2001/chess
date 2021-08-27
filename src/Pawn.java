@@ -116,6 +116,21 @@ public class Pawn extends Piece{
         return moves;
     }
 
+    @Override
+    public long getSeenSquares(long seenSquaresBitMask) {
+        for (Direction direction : moveTypes.get("captures")) {
+            if (square.distances.get(direction) == 0) break;
+
+            int start = square.getSquareNum();
+            int end = start + direction.val;
+
+            // add this square to the squares seen
+            seenSquaresBitMask |= (long) 1 << end;
+        }
+
+        return seenSquaresBitMask;
+    }
+
     ArrayList<Move> makePromotingMoves(int start, int end){
         ArrayList<Move> promotionMoves = new ArrayList<>();
         Piece promotingPiece = new Queen(colour, square);

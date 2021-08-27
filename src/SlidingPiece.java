@@ -62,6 +62,26 @@ public abstract class SlidingPiece extends Piece{
         return moves;
     }
 
+    @Override
+    public long getSeenSquares(long seenSquaresBitMask) {
+        for (Direction direction : directions) {
+            for (int i = 1; i <= square.getDistance(direction); i++) {
+
+                int start = square.getSquareNum();
+                int end = start + i * direction.val;
+
+                // add this square to the squares seen
+                seenSquaresBitMask |= (long) 1 << end;
+
+                if (board.at(end) != 0) {
+                    break;
+                }
+            }
+        }
+
+        return seenSquaresBitMask;
+    }
+
     private boolean pinsToKing(int start, Direction direction) {
         // checks beyond a piece to see if the king is behind it in this direction
         for (int i = 1; i <= board.squareAt(start).getDistance(direction); i++) {

@@ -13,6 +13,8 @@ public abstract class Piece {
 
     public abstract ArrayList<Move> getMoves(boolean movesOrCheckSeen);
 
+    public abstract long getSeenSquares(long seenSquaresBitMask);
+
     boolean canMoveThisDirection(Direction direction) {
         if (pinDirection == null) return true;
         return (direction.val == pinDirection.val || direction.val == -pinDirection.val);
