@@ -4,6 +4,7 @@ import java.util.Map;
 
 public class Pawn extends Piece{
     private Map<String, Direction[]> moveTypes;
+    int toPromotion;
 
     public Pawn(){
         this.value = 100;
@@ -43,70 +44,60 @@ public class Pawn extends Piece{
     }
 
     @Override
-    public ArrayList<Move> getMoves(boolean movesOrCheckSeen) {
+    public ArrayList<Move> getMoves(long squaresSeenByOtherSide, long pinRayBitMask, long checkSquareBitMask, boolean inCheck) {
         ArrayList<Move> moves = new ArrayList<>();
-        ArrayList<ArrayList<Integer>> squaresToBlockCheck = board.getCheckSquares();
 
-        // if the king is double-checked, only a king move can escape check
-        if (squaresToBlockCheck.size() > 1) {
-            return moves;
-        }
+        int start = square.getSquareNum();
+        boolean pinned = (pinRayBitMask & 1L << start) != 0;
 
-        int toPromotion = 7;
+        // pinned piece can't move if the king is also in check
+        if (pinned && inCheck) return moves;
 
-        for (Direction direction : moveTypes.get("normal")) {
-            toPromotion = square.distances.get(direction);
+        for (Direction[] directions : moveTypes.values()) {
 
-            if (movesOrCheckSeen && !canMoveThisDirection(direction)) {
-                break;
-            }
+            for (Direction direction : directions) {
+                int directionOffset = direction.val;
 
-            for (int squaresMoved = 1; squaresMoved <= toPromotion / 6 + 1; squaresMoved ++) {
+                toPromotion = square.distances.get(direction);
 
-                int start = square.getSquareNum();
-                int end = start + direction.val * squaresMoved;
-                if (board.at(end) == 0) {
+                if (pinned && ((1L << (start + directionOffset) & pinRayBitMask) == 0)) break;
 
-                    if (toPromotion == 1) {
-                        if (squaresToBlockCheck.size() == 0 || (squaresToBlockCheck.get(0).contains(end))) {
-                            moves.addAll(makePromotingMoves(start, end));
-                        }
-                    } else {
-                        if (squaresToBlockCheck.size() == 0 || (squaresToBlockCheck.get(0).contains(end))) {
-                            moves.add(new Move(start, end, this));
-                        }
-                    }
-                } else break;
-            }
-        }
+                for (int squaresMoved = 1; squaresMoved <= toPromotion / 6 + 1; squaresMoved ++) {
+                    int end = start + direction.val * squaresMoved;
+                    if (directionOffset == 8 && board.at(end) == 0) {
 
-        for (Direction captureDirection : moveTypes.get("capture")) {
-            if (movesOrCheckSeen && !canMoveThisDirection(captureDirection)) {
-                break;
-            }
-            if (square.distances.get(captureDirection) != 0) {
-                int start = square.getSquareNum();
-                int end = start + captureDirection.val;
-                // if there is no check to block (or piece delivering check to take), continue as normal
-                if (squaresToBlockCheck.size() == 0 || (squaresToBlockCheck.get(0).contains(end))) {
-
-                    int pieceAtEndSquare = board.at(end);
-
-                    if (!movesOrCheckSeen) {
-                        board.addSeen(end, colour);
-
-                        if (board.pieceAt(end) instanceof King) {
-                            ArrayList<Integer> thisSquareAndCheckSquare = new ArrayList<>();
-                            thisSquareAndCheckSquare.add(start);
-                            thisSquareAndCheckSquare.add(end);
-                            board.addCheckSquares(thisSquareAndCheckSquare);
-                        }
-                    } else if ((pieceAtEndSquare != 0 && Piece.colourOf(pieceAtEndSquare) != colour) || toPromotion == 3 &&
-                            board.canEnPassant(end)) {
                         if (toPromotion == 1) {
                             moves.addAll(makePromotingMoves(start, end));
                         } else {
                             moves.add(new Move(start, end, this));
+                        }
+                    } else break;
+                }
+            }
+                if (square.distances.get(captureDirection) != 0) {
+                    int start = square.getSquareNum();
+                    int end = start + captureDirection.val;
+                    // if there is no check to block (or piece delivering check to take), continue as normal
+                    if (squaresToBlockCheck.size() == 0 || (squaresToBlockCheck.get(0).contains(end))) {
+
+                        int pieceAtEndSquare = board.at(end);
+
+                        if (!movesOrCheckSeen) {
+                            board.addSeen(end, colour);
+
+                            if (board.pieceAt(end) instanceof King) {
+                                ArrayList<Integer> thisSquareAndCheckSquare = new ArrayList<>();
+                                thisSquareAndCheckSquare.add(start);
+                                thisSquareAndCheckSquare.add(end);
+                                board.addCheckSquares(thisSquareAndCheckSquare);
+                            }
+                        } else if ((pieceAtEndSquare != 0 && Piece.colourOf(pieceAtEndSquare) != colour) || toPromotion == 3 &&
+                                board.canEnPassant(end)) {
+                            if (toPromotion == 1) {
+                                moves.addAll(makePromotingMoves(start, end));
+                            } else {
+                                moves.add(new Move(start, end, this));
+                            }
                         }
                     }
                 }
@@ -125,7 +116,7 @@ public class Pawn extends Piece{
             int end = start + direction.val;
 
             // add this square to the squares seen
-            seenSquaresBitMask |= (long) 1 << end;
+            seenSquaresBitMask |= 1L << end;
         }
 
         return seenSquaresBitMask;

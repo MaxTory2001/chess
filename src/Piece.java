@@ -11,13 +11,22 @@ public abstract class Piece {
     int numMoves = 0;
     Direction pinDirection;
 
-    public abstract ArrayList<Move> getMoves(boolean movesOrCheckSeen);
+    public abstract ArrayList<Move> getMoves(long squaresSeenByOtherSide, long pinRayBitMask, long checkSquareBitMask, boolean inCheck);
 
     public abstract long getSeenSquares(long seenSquaresBitMask);
+
+    public long generateCheckBitMask(int kingSquare){
+        // the square of this piece and the king's square together make the bit mask for non-sliding pieces
+        return (long) square.getSquareNum() | kingSquare;
+    }
 
     boolean canMoveThisDirection(Direction direction) {
         if (pinDirection == null) return true;
         return (direction.val == pinDirection.val || direction.val == -pinDirection.val);
+    }
+
+    boolean canPinThisDirection(Direction direction) {
+        return false;
     }
 
     public Colour getColour() { return this.colour; }

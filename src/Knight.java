@@ -15,21 +15,18 @@ public class Knight extends Piece{
     }
 
     @Override
-    public ArrayList<Move> getMoves(boolean movesOrCheckSeen) {
+    public ArrayList<Move> getMoves(long squaresSeenByOtherSide, long pinRayBitMask, long checkSquareBitMask, boolean inCheck) {
         ArrayList<Move> moves = new ArrayList<>();
-        ArrayList<ArrayList<Integer>> squaresToBlockCheck = board.getCheckSquares();
 
-        // if the king is double-checked, only a king move can escape check. A Knight can also never move if pinned
-        if (isPinned() || squaresToBlockCheck.size() > 1) {
-            return moves;
-        }
+        int start = square.getSquareNum();
+
+        // pinned knight can never move
+        if ((pinRayBitMask & 1L << start) != 0) return moves;
+
+        int startx = start % 8;
+        int starty = start / 8;
 
         for (int possibleMove : possibleMoves) {
-
-            int start = square.getSquareNum();
-            int startx = start % 8;
-            int starty = start / 8;
-
             int end = start + possibleMove;
             int endx = end % 8;
             int endy = end / 8;
@@ -40,23 +37,12 @@ public class Knight extends Piece{
             // horizontal and vertical movement of knight should only ever be one or 2 squares
             if (Math.abs(endx - startx) >= 3 || Math.abs(endy - starty) >= 3) break;
 
-            if (squaresToBlockCheck.size() == 0 || (squaresToBlockCheck.get(0).contains(end))) {
+            if (!inCheck || (checkSquareBitMask & 1L << end) != 0) {
+                // if the king isn't in check or this move blocks the check, we are safe to move legally
                 int endSquarePiece = board.at(end);
 
                 if (Piece.colourOf(endSquarePiece) != colour) {
-                    if (movesOrCheckSeen) {
-                        moves.add(new Move(start, end, this));
-                    } else {
-                        board.addSeen(end, colour);
-
-                        if (board.pieceAt(end) instanceof King) {
-                            ArrayList<Integer> thisSquareAndCheckSquare = new ArrayList<>(2);
-                            thisSquareAndCheckSquare.add(start);
-                            thisSquareAndCheckSquare.add(end);
-                            board.addCheckSquares(thisSquareAndCheckSquare);
-                        }
-                    }
-
+                    moves.add(new Move(start, end, this));
                 }
             }
         }
@@ -66,14 +52,15 @@ public class Knight extends Piece{
 
     @Override
     public long getSeenSquares(long seenSquaresBitMask) {
-        for (int possibleMove : possibleMoves) {
-            int start = square.getSquareNum();
+        int start = square.getSquareNum();
+
+        int startx = start % 8;
+        int starty = start / 8;
+
+        for (int possibleMove : possibleMoves) { ;
             int end = start + possibleMove;
 
             if (end < 0 || end > 63) break; // can only move within board
-
-            int startx = start % 8;
-            int starty = start / 8;
 
             int endx = end % 8;
             int endy = end / 8;
@@ -82,7 +69,7 @@ public class Knight extends Piece{
             if (Math.abs(endx - startx) >= 3 || Math.abs(endy - starty) >= 3) break;
 
             // add this square to the squares seen
-            seenSquaresBitMask |= (long) 1 << end;
+            seenSquaresBitMask |= 1L << end;
         }
 
         return seenSquaresBitMask;

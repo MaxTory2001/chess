@@ -29,6 +29,9 @@ public class Board {
 
     ArrayList<Piece>[] pieces = new ArrayList[2];
     King[] kings = new King[2];
+    ArrayList<Knight>[] knights = new ArrayList[2];
+    ArrayList<SlidingPiece>[] slidingPieces = new ArrayList[2];
+    ArrayList<Pawn>[] pawns = new ArrayList[2];
 
     // FEN string encoding the initial status of the chess board at the start of a game
     private static final String START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -120,6 +123,12 @@ public class Board {
                 this.pieces[colourIndex].add(piece);
                 if (piece instanceof King) {
                     kings[colourIndex] = (King) piece;
+                } else if (piece instanceof Knight) {
+                    knights[colourIndex].add((Knight) piece);
+                } else if (piece instanceof SlidingPiece) {
+                    slidingPieces[colourIndex].add((SlidingPiece) piece);
+                } else {
+                    pawns[colourIndex].add((Pawn) piece);
                 }
                 this.squaresToPieces[square] = piece;
 
