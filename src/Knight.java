@@ -33,11 +33,11 @@ public class Knight extends Piece{
 
             // checking that knight can move within boundaries of the board
 
-            if (end < 0 || end >= 64) break;
+            if (end < 0 || end >= 64) continue;
             // horizontal and vertical movement of knight should only ever be one or 2 squares
-            if (Math.abs(endx - startx) >= 3 || Math.abs(endy - starty) >= 3) break;
+            if (Math.abs(endx - startx) >= 3 || Math.abs(endy - starty) >= 3) continue;
 
-            if (!inCheck || (checkSquareBitMask & 1L << end) != 0) {
+            if (!board.playerToMoveInCheck() || (checkSquareBitMask & 1L << end) != 0) {
                 // if the king isn't in check or this move blocks the check, we are safe to move legally
                 int endSquarePiece = board.at(end);
 

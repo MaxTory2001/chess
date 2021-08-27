@@ -4,18 +4,24 @@ public class LegalMovesGenerator implements MoveGenerator{
     int friendlyPieceColour; // Colour of player to move
 
     int friendlyKingSquare;
-    int enemyKingSquare;
 
     long pinRayBitMask;  // Stores all the pin squares in the position in a single long
     long checkRayBitMask;// stores all the squares involved in checks on the king
-    long seenSquares;
-    boolean playerToMoveInCheck = false;
+    long squaresOpponentSees;
+    boolean playerToMoveInCheck;
     boolean isDoubleCheck = false;
 
     Board board;
 
     public LegalMovesGenerator(int turnIndex) {
-        this.friendlyPieceColour = turnIndex == 1 ? 0 : 1;
+        this.friendlyPieceColour = turnIndex;
+
+        friendlyKingSquare = 0;
+        pinRayBitMask = 0;
+        checkRayBitMask = 0;
+        squaresOpponentSees = 0;
+        playerToMoveInCheck = false;
+        isDoubleCheck = false;
     }
 
     @Override
@@ -29,25 +35,24 @@ public class LegalMovesGenerator implements MoveGenerator{
 
         friendlyKingSquare = board.kingSquares[friendlyPieceColour];
 
-        ArrayList<Move> legalMoves = new ArrayList<>();
-
         updateChecksAttacksAndPins();
 
-        legalMoves.addAll(generateKingMoves());
+        ArrayList<Move> legalMoves = new ArrayList<>(generateKingMoves());
 
         if (isDoubleCheck) return legalMoves;
 
-        legalMoves.addAll(generateKnightMoves());
-        legalMoves.addAll(generateSlidingMoves());
-        legalMoves.addAll(generatePawnMoves())
+        legalMoves.addAll(generateNonKingMoves());
+        legalMoves.addAll(getLegalCastlingMoves());
         return legalMoves;
     }
 
+
     void updateChecksAttacksAndPins() {
         // resetting values for pins, checks and squares seen
-        checkRayBitMask = 0L;
-        pinRayBitMask = 0L;
-        seenSquares = 0L;
+        checkRayBitMask = 0;
+        pinRayBitMask = 0;
+        squaresOpponentSees = 0;
+        playerToMoveInCheck = false;
 
         int enemyPieceColour = 1 - friendlyPieceColour;
 
@@ -60,11 +65,12 @@ public class LegalMovesGenerator implements MoveGenerator{
                     isDoubleCheck = true;
                 }
                 playerToMoveInCheck = true;
+                board.playerInCheck(friendlyPieceColour);
 
                 checkRayBitMask |= piece.generateCheckBitMask(friendlyKingSquare);
             }
 
-            seenSquares |= thisPieceSeenSquares;
+            squaresOpponentSees |= thisPieceSeenSquares;
         }
 
         updatePins();
@@ -82,7 +88,7 @@ public class LegalMovesGenerator implements MoveGenerator{
 
 
                 if (pieceAtSquare != 0) {
-                    if (Piece.colourOf(pieceAtSquare).val % 3 - 1 != friendlyPieceColour) {
+                    if ((Piece.colourOf(pieceAtSquare).val + 2) % 3 != friendlyPieceColour) {
                         if (!foundFriendlyPiece) break;
                         // friendly piece in this direction is pinned by enemy piece
                         if (board.pieceAt(square).canPinThisDirection(direction)) {
@@ -105,20 +111,64 @@ public class LegalMovesGenerator implements MoveGenerator{
     ArrayList<Move> generateKingMoves() {
         Piece king = board.kings[friendlyPieceColour];
         assert (king instanceof King);
-        return king.getMoves(seenSquares, 0, 0);
+        return king.getMoves(squaresOpponentSees, pinRayBitMask, checkRayBitMask, playerToMoveInCheck);
     }
 
-    ArrayList<Move> generateKnightMoves() {
-        ArrayList<Move> knightMoves = new ArrayList<>();
+    ArrayList<Move> getLegalCastlingMoves() {
+        int colourIndex  = (board.turn + 2) % 3;
+        int kingSquare = board.kingSquares[colourIndex];
+        Piece king = board.kings[colourIndex];
 
-        for (Piece knight : board.knights[friendlyPieceColour]) {
-            knightMoves.addAll(knight.getMoves(seenSquares, pinRayBitMask, checkRayBitMask));
+        ArrayList<Move> castlingMoves = new ArrayList<>();
+
+        if (king.hasMoved()) {
+            return castlingMoves;
         }
 
-        return knightMoves;
+        if (board.playerToMoveInCheck()) {
+            return castlingMoves;
+        }
+
+        for (int direction = -1; direction < 2; direction += 2) {
+            int offsetFromKing = direction;
+            int directionIndex = direction == 1 ? 1 : 0;
+
+            boolean canCastleThisDirection = board.canCastle[colourIndex][directionIndex];
+
+            while (canCastleThisDirection && (kingSquare + offsetFromKing)/ 8 == kingSquare/8) {
+                if (Math.abs(offsetFromKing) <= 2) {
+                    canCastleThisDirection = canMoveThrough(kingSquare + offsetFromKing);
+                } else if (offsetFromKing == -3 && board.squaresToPieces[kingSquare - 3] == null) {
+                    canCastleThisDirection = false;
+                } else {
+                    Piece piece = board.squaresToPieces[kingSquare + offsetFromKing];
+                    if (piece == null || (piece.hasMoved()) || !(piece instanceof Rook)) {
+                        canCastleThisDirection = false;
+                    }
+                }
+                offsetFromKing += direction;
+            }
+            if (canCastleThisDirection) {
+                castlingMoves.add(board.castles[colourIndex][direction == -1 ? 0 : 1]);
+            }
+        }
+        return castlingMoves;
     }
 
-    ArrayList<Move> generateSlidingMoves() {
-        return null;
+    private boolean canMoveThrough(int square) {
+        if (board.at(square) != 0) {
+            return false;
+        }
+        return (squaresOpponentSees & 1L << square) == 0;
+    }
+
+    ArrayList<Move> generateNonKingMoves() {
+        ArrayList<Move> moves = new ArrayList<>();
+
+        for (Piece piece : board.pieces[friendlyPieceColour]) {
+            moves.addAll(piece.getMoves(squaresOpponentSees, pinRayBitMask, checkRayBitMask, playerToMoveInCheck));
+        }
+
+        return moves;
     }
 }

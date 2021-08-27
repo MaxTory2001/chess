@@ -24,7 +24,7 @@ public class Game {
 
             if (availableMoves.size() == 0) {
                 // if no moves are available it is either checkmate or stalemate
-                return (board.isCheck(true) ? turn : 0);
+                return (board.playerToMoveInCheck() ? turn : 0);
             }
             // get the appropriate player to select their next move
             Move chosenMove = (turn == 1 ? white : black).chooseMove(availableMoves);

@@ -37,7 +37,7 @@ public class NaiveDepthPlayer extends Player{
             }
         }
 
-        board.undoMove();
+        board.undoMove(move);
 
         return -bestValuation;
     }
