@@ -18,7 +18,7 @@ public class Game {
     public int play() {
         while (move < 100) {
             if (turn == 1) move++;
-            System.out.println("moves.Move: " + move);
+            System.out.println("moves: " + move);
             board.draw();
             ArrayList<Move> availableMoves = board.getLegalMoves();
 
@@ -37,5 +37,4 @@ public class Game {
         }
         return 0;
     }
-
 }

@@ -262,14 +262,13 @@ public class Board {
         // Executes a move on the board
         move.createSpecialMove(this);
         move.execute(this);
-        completedMoves.add(move);
+
         turn = -turn;
     }
 
     public void undoMove(Move move){
         // takes back the last move from the board
-        Move undoingMove = completedMoves.remove(completedMoves.size() - 1);
-        undoingMove.undo(this);
+        move.undo(this);
         turn = -turn;
     }
 
