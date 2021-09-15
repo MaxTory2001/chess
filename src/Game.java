@@ -18,13 +18,13 @@ public class Game {
     public int play() {
         while (move < 100) {
             if (turn == 1) move++;
-            System.out.println("moves.Move: " + move);
+            System.out.println("moves: " + move);
             board.draw();
             ArrayList<Move> availableMoves = board.getLegalMoves();
 
             if (availableMoves.size() == 0) {
                 // if no moves are available it is either checkmate or stalemate
-                return (board.isCheck(true) ? turn : 0);
+                return (board.playerToMoveInCheck() ? turn : 0);
             }
             // get the appropriate player to select their next move
             Move chosenMove = (turn == 1 ? white : black).chooseMove(availableMoves);
@@ -37,5 +37,4 @@ public class Game {
         }
         return 0;
     }
-
 }

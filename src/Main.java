@@ -14,8 +14,8 @@ public class Main {
             Player white = new TerminalPlayer(gameBoard, Colour.WHITE);
             //Player white = new ABPruningPlayer(gameBoard, Colour.WHITE, 5);
             //Player white = new NumberOfPositionsDetector(gameBoard, Colour.WHITE, 5);
-            //Player black = new TerminalPlayer(gameBoard, Colour.BLACK);
-            Player black = new ABPruningPlayer(gameBoard, Colour.BLACK, 5);
+            Player black = new TerminalPlayer(gameBoard, Colour.BLACK);
+            //Player black = new ABPruningPlayer(gameBoard, Colour.BLACK, 5);
             //Player black = new NumberOfPositionsDetector(gameBoard, Colour.BLACK, 5);
 
             Game game = new Game(gameBoard, white, black);

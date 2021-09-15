@@ -39,7 +39,7 @@ public class NumberOfPositionsDetector extends Player{
                 numberOfPositions += getNumAvailable(response, remainingDepth -1);
             }
         }
-        board.undoMove();
+        board.undoMove(move);
 
         return numberOfPositions;
     }

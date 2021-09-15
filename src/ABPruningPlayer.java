@@ -25,7 +25,7 @@ public class ABPruningPlayer extends Player{
                 alpha = valuation;
                 bestMove = move;
             }
-            board.undoMove();
+            board.undoMove(move);
         }
 
         System.out.println(alpha);
@@ -43,7 +43,7 @@ public class ABPruningPlayer extends Player{
         Collections.sort(availableMoves);
 
         if (availableMoves.size() == 0) {
-            if (board.isCheck(true)) {
+            if (board.playerToMoveInCheck()) {
                 return -1000000;
             }
         }
@@ -52,7 +52,7 @@ public class ABPruningPlayer extends Player{
             board.makeMove(move);
             // for the opposite player, alpha and beta swap
             int valuation = -findValuation(remainingDepth - 1, -beta, -alpha);
-            board.undoMove();
+            board.undoMove(move);
 
             if (valuation >= beta) {
                 // we have too many good options, opponent shouldn't play this move
