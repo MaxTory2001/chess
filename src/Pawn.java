@@ -61,10 +61,15 @@ public class Pawn extends Piece{
                 int end = start + direction.val;
                 int pieceAtEndSquare = board.at(end);
 
-                if (Math.abs(direction.val) == 8) toPromotion = square.distances.get(direction);
+                // Check if we will hit the edge of the board!
+                if (square.distances.get(direction) == 0) continue;
 
-                if (pinned && ((1L << (start + directionOffset) & pinRayBitMask) == 0)) break;
-                if (toPromotion == 0) break; // diagonal move takes us off the edge of the board
+                Direction forward = (colour == Colour.WHITE) ? Direction.UP : Direction.DOWN;
+
+                // how many squares away from promoting are we?
+                int toPromotion = square.distances.get(forward);
+
+                if (pinned && ((1L << (start + directionOffset) & pinRayBitMask) == 0)) continue;
 
                 if (Math.abs(directionOffset) == 8) {
                     // getting moves straight forward
@@ -79,7 +84,7 @@ public class Pawn extends Piece{
                             } else {
                                 moves.add(new Move(start, end, this));
                             }
-                        } else break;
+                        } else break; // can never move if there is a piece in front
                     }
                 }
                 // diagonal moves
@@ -113,7 +118,7 @@ public class Pawn extends Piece{
     @Override
     public long getSeenSquares(long seenSquaresBitMask) {
         for (Direction direction : moveTypes.get("capture")) {
-            if (square.distances.get(direction) == 0) break;
+            if (square.distances.get(direction) == 0) continue;
 
             int start = square.getSquareNum();
             int end = start + direction.val;

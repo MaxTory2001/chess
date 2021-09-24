@@ -4,6 +4,7 @@ public class LegalMovesGenerator implements MoveGenerator{
     int friendlyPieceColour; // Colour of player to move
 
     int friendlyKingSquare;
+    long friendlyKingSquareBitMask;
 
     long pinRayBitMask;  // Stores all the pin squares in the position in a single long
     long checkRayBitMask;// stores all the squares involved in checks on the king
@@ -34,6 +35,7 @@ public class LegalMovesGenerator implements MoveGenerator{
         this.board = board;
 
         friendlyKingSquare = board.kingSquares[friendlyPieceColour];
+        friendlyKingSquareBitMask = 1L << friendlyKingSquare;
 
         updateChecksAttacksAndPins();
 
@@ -54,12 +56,12 @@ public class LegalMovesGenerator implements MoveGenerator{
         squaresOpponentSees = 0;
         playerToMoveInCheck = false;
 
-        int enemyPieceColour = 1 - friendlyPieceColour;
+        int enemyPieceColour = (1 - friendlyPieceColour) % 2;
 
         for (Piece piece : board.pieces[enemyPieceColour]) {
             long thisPieceSeenSquares = piece.getSeenSquares(pinRayBitMask);
 
-            if ((thisPieceSeenSquares & (long) friendlyKingSquare) != 0) {
+            if ((thisPieceSeenSquares & friendlyKingSquareBitMask) != 0) {
                 // other piece can see our king! we are in check
                 if (playerToMoveInCheck) {
                     isDoubleCheck = true;
@@ -82,7 +84,7 @@ public class LegalMovesGenerator implements MoveGenerator{
             long thisDirectionPins = 0L;
             boolean foundFriendlyPiece = false;
 
-            for (int dist = 1; dist < board.squareAt(friendlyKingSquare).getDistance(direction); dist++) {
+            for (int dist = 1; dist <= board.squareAt(friendlyKingSquare).getDistance(direction); dist++) {
                 int square = friendlyKingSquare + dist * direction.val;
                 int pieceAtSquare = board.at(square);
 

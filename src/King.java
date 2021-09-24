@@ -19,8 +19,12 @@ public class King extends Piece{
                 int start = square.getSquareNum();
                 int end = start + direction.val;
                 // can't move into check
-                if ((1L << end & squaresSeenByOtherSide) != 0) {
-                    moves.add(new Move(start, end, this));
+                if ((1L << end & squaresSeenByOtherSide) == 0) {
+                    int endSquarePiece = board.at(end);
+
+                    if (endSquarePiece == 0 || Piece.colourOf(endSquarePiece) != colour){
+                        moves.add(new Move(start, end, this));
+                    }
                 }
             }
         }

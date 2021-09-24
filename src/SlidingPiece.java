@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public abstract class SlidingPiece extends Piece{
     Direction[] directions; // the directions in which the piece can slide
@@ -98,21 +97,6 @@ public abstract class SlidingPiece extends Piece{
         // sliding pieces can pin any piece in the direction they move
         for (Direction viableDirection : directions) {
             if (direction.val == viableDirection.val) return true;
-        }
-        return false;
-    }
-
-    private boolean pinsToKing(int start, Direction direction) {
-        // checks beyond a piece to see if the king is behind it in this direction
-        for (int i = 1; i <= board.squareAt(start).getDistance(direction); i++) {
-            int end = start + i * direction.val;
-
-            int endSquarePiece = board.at(end);
-            Colour endSquarePieceColour = Piece.colourOf(endSquarePiece);
-
-            if(endSquarePiece != 0) {
-                return (board.pieceAt(end) instanceof King && endSquarePieceColour != colour);
-            }
         }
         return false;
     }

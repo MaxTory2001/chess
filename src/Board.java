@@ -10,8 +10,6 @@ public class Board {
     final Piece[] squaresToPieces = new Piece[64];
     private final int[] board = new int[64];
 
-    // Storing the squares seen by each colour
-    private final boolean[][] squaresSeen = new boolean[2][64];
     final boolean[] inCheck = new boolean[2];
     private ArrayList<ArrayList<Integer>> blockCheckSquares = new ArrayList<>();
 
@@ -21,8 +19,7 @@ public class Board {
 
     MoveGenerator[] moveGenerators;
 
-    private final ArrayList<Move> completedMoves = new ArrayList<>();
-    int turn;   // stores the character whose turn it is to move
+    int turn;   // stores the player whose turn it is to move
 
     private int move;
     private int movesSinceCaptureOrPush; // for 50 move draw rule
@@ -51,30 +48,6 @@ public class Board {
         createCastlingMoves();
 
         moveGenerators = new MoveGenerator[]{new LegalMovesGenerator(0), new LegalMovesGenerator(1)};
-    }
-
-    public void addSeen(int square, Colour colour) {
-        int colourIndex = colour == Colour.WHITE ? 0 : 1;
-
-        squaresSeen[colourIndex][square] = true;
-
-        if (kingSquares[(colourIndex + 1) % 2] == square) {
-            inCheck[(colourIndex + 1) % 2] = true;
-        }
-    }
-
-    public void addCheckSquares(ArrayList<Integer> squares) {
-        blockCheckSquares.add(squares);
-    }
-
-    public ArrayList<ArrayList<Integer>> getCheckSquares() {
-        return blockCheckSquares;
-    }
-
-    public boolean isSeen(int square, Colour colour) {
-        int colourIndex = colour == Colour.WHITE ? 1 : 0;
-
-        return squaresSeen[colourIndex][square];
     }
 
     public int at(int boardIndex) {
@@ -191,12 +164,6 @@ public class Board {
         }
 
         return piece;
-    }
-
-    private ArrayList<Move> getMoves() {
-        // setting player not in check before looking for check and generating moves
-        inCheck[(turn + 2) % 3] = false;
-        return moveGenerators[(turn + 2) % 3].generatePseudoLegalMoves(this);
     }
 
     public void setEnPassant(int square) {

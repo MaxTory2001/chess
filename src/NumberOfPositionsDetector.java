@@ -35,7 +35,10 @@ public class NumberOfPositionsDetector extends Player{
         if (remainingDepth == 1) {
             numberOfPositions = responses.size();
         } else {
-            for (Move response : board.getLegalMoves()) {
+            for (Move response : responses) {
+                /*if (move.start == 52 && move.end == 44) {
+                    System.out.println(response.start + " to " + response.end + ": " + getNumAvailable(response, remainingDepth-1));
+                }*/
                 numberOfPositions += getNumAvailable(response, remainingDepth -1);
             }
         }

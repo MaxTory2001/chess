@@ -9,14 +9,14 @@ public class Main {
     public static void main(String[] args) {
         //for (String testFen : TEST_FENS) {
             Board gameBoard = new Board();
-            //Board gameBoard = new Board("r1bqkbnr/pppppppp/n7/8/Q7/2P5/PP1PPPPP/RNB1KBNR b KQkq - 0 1");
+            //Board gameBoard = new Board("rnbqkbnr/pppppppp/8/8/8/2P5/PP1PPPPP/RNBQKBNR b KQkq - 0 1");
 
-            Player white = new TerminalPlayer(gameBoard, Colour.WHITE);
+            //Player white = new TerminalPlayer(gameBoard, Colour.WHITE);
             //Player white = new ABPruningPlayer(gameBoard, Colour.WHITE, 5);
-            //Player white = new NumberOfPositionsDetector(gameBoard, Colour.WHITE, 5);
-            Player black = new TerminalPlayer(gameBoard, Colour.BLACK);
+            Player white = new NumberOfPositionsDetector(gameBoard, Colour.WHITE, 5);
+            //Player black = new TerminalPlayer(gameBoard, Colour.BLACK);
             //Player black = new ABPruningPlayer(gameBoard, Colour.BLACK, 5);
-            //Player black = new NumberOfPositionsDetector(gameBoard, Colour.BLACK, 5);
+            Player black = new NumberOfPositionsDetector(gameBoard, Colour.BLACK, 3);
 
             Game game = new Game(gameBoard, white, black);
             int winner = game.play();
